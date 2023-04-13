@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #container {
+            width: 500px;
+            margin: 50px auto 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container">
+        <input type="text" id="ipt" onchange="onInputChange()">
+    </div>
+</body>
+
+</html>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<script>
+    const selected = [];
+    let transform = {
+        x: 0,
+        y: 0,
+        k: 1,
+    };
+
+    let zoom = null;
+    const zoomMin = 0.3;
+    const zoomMax = 5;
+    const width = 500;
+    const height = 500;
+
+    const svg = d3.select('#container')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', width);
+
+    const container = svg.append('g')
+        .attr(
+            'transform',
+            `translate(${transform.x},${transform.y} ) scale(${transform.k})`,
+        );
+
+    const data = [
+        { id: 1, fill: 'black', x: 10, y: 10 },
+        { id: 2, fill: 'black', x: 50, y: 50 },
+        { id: 3, fill: 'black', x: 100, y: 70 },
+        { id: 4, fill: 'black', x: 20, y: 100 }
+    ];
+
+    draw(); // 绘制
+    bindZoom(); // 绘制
+    function draw() {
+        const update = container.selectAll('rect')
+            .data(data, d => d.id);
+        //修改层
+        update.attr('x', (d, idx) => d.x)
+            .attr('y', (d, idx) => d.y)
+            .attr('fill', (d) => d.fill)
+
+        //渲染层
+        const enter = update.enter();
+
+        //删除层
+        const exit = update.exit();
+
+        enter.append('rect')
+            .attr('width', 20)
+            .attr('height', 20)
+            .attr('id', d => d.id)
+            .attr('x', (d, idx) => d.x)
+            .attr('y', (d, idx) => d.y)
+            .attr('fill', (d) => d.fill)
+            .attr('stroke', 'blue')
+            .attr('strokeWidth', 1)
+
+        exit.remove()
+    }
+
+    function transformZoomBy([x, y] = [], trans) { //转化成zoom后的坐标
+        return {
+            transformX: (x * trans.k) + trans.x,
+            transformY: (y * trans.k) + trans.y,
+        }
+    };
+
+    bindEvent();
+    function bindEvent() { // 绑定点击事件（看不懂的去前面d3event事件绑定去看看）
+        svg.selectAll('rect').on('click', (d) => {
+
+            const index = selected.indexOf(d.id);
+            if (index !== -1) {
+                selected.splice(index, 1);
+            } else {
+                selected.push(d.id);
+            }
+            d3.event.preventDefault();
+            updateColor();
+        })
+    };
+
+
+    function updateColor() { // 更新color
+        data.forEach((item) => {
+            if (selected.includes(item.id)) {
+                item.fill = 'red';
+            }
+        });
+        draw();
+    };
+
+    function bindZoom() { // 设置zoom
+        zoom = d3.zoom()
+            .scaleExtent([zoomMin, zoomMax])
+            .on('zoom', function () {
+                transform = d3.zoomTransform(this);
+                container.attr('transform', transform);
+                console.log(transform, 'transform...')
+            })
+        svg.call(zoom).on('dblclick.zoom', null);
+    };
+
+    function stopZoom() {
+        svg.on('mousedown.zoom', null);
+        svg.on('mousemove.zoom', null);
+        svg.on('dblclick.zoom', null);
+        svg.on('touchstart.zoom', null);
+    }
+
+
+    function onInputChange() {
+        const dom = document.querySelector('#ipt');
+        console.log(dom.value, 'dom', dom);
+    }
+</script>
