@@ -1,3 +1,10 @@
+<!--
+ * @Author: m1k0to
+ * @Github: https://github.com/m1k0to
+ * @Date: 2023-04-14 12:54:55
+ * @LastEditors: m1k0to
+ * @LastEditTime: 2023-04-14 17:01:11
+-->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,14 +16,14 @@
     <style>
         #container {
             width: 500px;
-            margin: 50px auto 0;
+            background-color: pink;
         }
     </style>
 </head>
 
 <body>
     <div id="container">
-        <input type="text" id="ipt" onchange="onInputChange()">
+        <input type="text" id="ipt" placeholder="请输入id(1,2,3,4)" onchange="onInputChange()">
     </div>
 </body>
 
@@ -34,8 +41,8 @@
     let zoom = null;
     const zoomMin = 0.3;
     const zoomMax = 5;
-    const width = 500;
-    const height = 500;
+    const width = 1920;
+    const height = 1080;
 
     const svg = d3.select('#container')
         .append('svg')
@@ -106,7 +113,6 @@
         })
     };
 
-
     function updateColor() { // 更新color
         data.forEach((item) => {
             if (selected.includes(item.id)) {
@@ -134,9 +140,65 @@
         svg.on('touchstart.zoom', null);
     }
 
+    function drawCloneGroup(item) { // draw clone group
+        const cloneGroup = svg.append('g')
+            .attr('class', 'clone-group')
+            .attr(
+                'transform',
+                `translate(${transform.x},${transform.y} ) scale(${transform.k})`,
+            );
 
-    function onInputChange() {
+        cloneGroup // 绘制搜索到的数据
+            .append('rect')
+            .datum(item)
+            .attr('width', 20)
+            .attr('height', 20)
+            .attr('id', d => d.id)
+            .attr('x', (d, idx) => d.x)
+            .attr('y', (d, idx) => d.y);
+
+
+        return cloneGroup;
+    }
+
+    /**
+     * @params { Object } targetGroupBBox 
+    */
+    function zoomCenter(targetGroupBBox = { width: 0, height: 0, x: 0, y: 0 }) { // 跟之前居中一样
+        const scaleX = width / targetGroupBBox.width;
+        const scaleY = height / targetGroupBBox.height;
+
+        let k = Math.min(scaleX, scaleY) * 0.7;
+        k = Math.max(k, zoomMin);
+        k = Math.min(k, zoomMax); // 用画布大小 / 当前svg得大小 获取到比例值
+
+        // 算出居中得x、y坐标（往俩盒子 一个大盒子（画布）和另外一个盒子（图形撑起来得））怎么让图形撑起来得居中呢！！！
+        // 用画布自身得一半 减去 gropu得一半 * 缩放 K, 再减去gropu得translate 
+        const translateByX = width / 2 - (targetGroupBBox.width / 2) * k - (targetGroupBBox.x * k);
+        const translateByY = height / 2 - (targetGroupBBox.height / 2) * k - (targetGroupBBox.y * k);
+
+        const transform = d3.zoomIdentity
+            .translate(translateByX, translateByY)
+            .scale(k); // 获取到目标 transform
+
+        svg.transition() // 过渡效果
+            .duration(500) // 100ms
+            .call(zoom.transform, transform);
+    }
+
+    function onInputChange() { // 暂时用id进行搜索
         const dom = document.querySelector('#ipt');
-        console.log(dom.value, 'dom', dom);
+        const value = dom?.value; // get input value
+
+        const item = data.find(d => d.id === +value);
+
+        if (item) {
+            const cloneGroup = drawCloneGroup(item); // 绘制并返回group 留作删除绘制的图形用。cloneGroup.remove()
+            const cloneGroupBBox = document.querySelector('.clone-group').getBBox(); // 使用getBBox 能获取到该的盒子的一些属性
+            // selected.push(item.id);
+            // updateColor(); //选中该节点
+            zoomCenter(cloneGroupBBox); // 居中
+            cloneGroup.remove(); //删除clone group
+        }
     }
 </script>
