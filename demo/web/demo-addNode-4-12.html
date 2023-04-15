@@ -87,7 +87,6 @@
   </div>
 </body>
 <script type="text/javascript">
-  let marge = { top: 820, bottom: 60, left: 406, right: 60 }
   let svg = d3.select('.kg')
     .append('svg')
     .attr('width', 1600)
@@ -107,7 +106,7 @@
   )
     .on('dblclick.zoom', null)
   let g = svg.append('g')
-    .attr('transform', 'translate(' + 0 + ',' + 0 + ')')
+    .attr('transform', 'translate(0,0)')
     .attr('class', 'container')
   // 准备数据
   // 节点集
@@ -1012,58 +1011,17 @@
     repaint();
   }
 
-  function drawCloneGroup(item) { // draw clone group
-    const cloneGroup = svg.append('g')
-      .attr('class', () => {
-        console.log('111');
-        return 'clone-group'
-      })
-      .attr(
-        'transform',
-        `translate(0, 0) scale(1)`,
-      );
-    // 绘制搜索到的数据
-    // .append('rect')
-    // .datum(item)
-    // .attr('width', 20)
-    // .attr('height', 20)
-    // .attr('id', d => d.id)
-    // .attr('x', (d, idx) => d.x)
-    // .attr('y', (d, idx) => d.y);
-    cloneGroup
-      .selectAll('.circleText')
-      .datum(item)
-      .enter()
-      .append('g')
-      .attr('class', () => {
-        console.log('222');
-        return 'singleNode'
-      })
-      .attr('id', function (d) {
-        console.log('lll');
-        return 'singleNode' + d.id
-      })
-      .style('cursor', 'pointer')
-      .attr('transform', function (d) {
-        console.log(g)
-        let cirX = d.x
-        let cirY = d.y
-        return 'translate(' + cirX + ',' + cirY + ')'
-      });
-
-    return cloneGroup;
-  }
-
+  // 被选节点中心缩放
   function zoomCenter(targetGroupBBox = { width: 0, height: 0, x: 0, y: 0 }) { // 跟之前居中一样
     const scaleX = width / targetGroupBBox.width;
     const scaleY = height / targetGroupBBox.height;
 
     let k = Math.min(scaleX, scaleY) * 0.7;
     k = Math.max(k, zoomMin);
-    k = Math.min(k, zoomMax); // 用画布大小 / 当前svg得大小 获取到比例值
+    k = Math.min(k, zoomMax);
 
-    // 算出居中得x、y坐标（往俩盒子 一个大盒子（画布）和另外一个盒子（图形撑起来得））怎么让图形撑起来得居中呢！！！
-    // 用画布自身得一半 减去 gropu得一半 * 缩放 K, 再减去gropu得translate 
+    // 算出居中得x、y坐标（往俩盒子 一个大盒子（画布）和另外一个盒子（图形撑起来得））怎么让图形撑起来居中呢
+    // 用画布自身得一半 减去 gropu的一半 * 缩放 K, 再减去gropu得translate 
     const translateByX = width / 2 - (targetGroupBBox.width / 2) * k - (targetGroupBBox.x * k);
     const translateByY = height / 2 - (targetGroupBBox.height / 2) * k - (targetGroupBBox.y * k);
 
@@ -1072,19 +1030,19 @@
       .scale(k); // 获取到目标 transform
 
     svg.transition() // 过渡效果
-      .duration(500) // 100ms
+      .duration(500) // 延时 适当数值 显得不突兀
       .call(zoom.transform, transform);
   }
 
+  // 突出节点函数
   function searchNode() {
+    // 获取输入
     const inputIndex = document.querySelector('input')?.value
+    // 对每个元素
     d3.selectAll('.singleNode').each(function (d, i) {
       if (d.name === inputIndex) {
-        console.log('origin:', d.x, d.y);
-        // const cloneGroup = drawCloneGroup(d)
-        // const cloneGroupBox = document.querySelector('.clone-group').getBBox()
-        zoomCenter({width: 70, height: 70, x: d.x, y: d.y})
-        // cloneGroup.remove()
+        // width和height根据节点的直径确定
+        zoomCenter({width: 70, height: 70, x: d.x, y: d.y});
       }
     })
   }
