@@ -77,10 +77,14 @@
   <div class="container">
     <button class="addNode">插入节点与关系</button>
     <div class="infoBox">
-      <span id="xxx"></span>
+      <span id="showinfo"></span>
     </div>
     <div>
-      <input type="text" onchange="searchNode()">
+      <input type="text" class="nodesearch" onchange="searchNode()">
+      <br>
+      <input type="file" accept=".csv" class="filesource" onchange="loadFile()">
+      <br>
+      <button class="init">init</button>
     </div>
     <div class="kg">
     </div>
@@ -92,6 +96,8 @@
     .attr('width', 1600)
     .attr('height', 900)
 
+  const btn = document.querySelector('.init')
+
   let zoom = null
   let width = svg.attr('width')
   let height = svg.attr('height')
@@ -99,62 +105,80 @@
   const zoomMin = 0.3;
   const zoomMax = 2;
 
+  let g = svg.append('g')
+    .attr('transform', 'translate(0,0)')
+    .attr('class', 'container')
   svg.call(
     zoom = d3.zoom().on('zoom', function () {
       g.attr('transform', d3.event.transform)
     })
   )
     .on('dblclick.zoom', null)
-  let g = svg.append('g')
-    .attr('transform', 'translate(0,0)')
-    .attr('class', 'container')
-  // 准备数据
-  // 节点集
-  let nodes = [
-    { id: 1, name: '恩格斯' },
-    { id: 2, name: '《国民经济学批判大纲》' },
-    { id: 3, name: '《家庭、私有制和国家的起源》' },
-    { id: 4, name: '《路德维希·费尔巴哈和德国古典哲学的终结》' },
-    { id: 5, name: '1820年11月28日' },
-    { id: 6, name: '1895年8月5日' },
-    { id: 7, name: '共产主义者同盟' },
-    { id: 8, name: '科学社会主义' },
-    { id: 9, name: '《资本论》' },
-    { id: 10, name: '《在马克思墓前的讲话》' },
-    { id: 11, name: '正义者同盟' },
-    { id: 12, name: '列宁' },
-    { id: 13, name: '《帝国主义是资本主义的最高阶段》' },
-    { id: 14, name: '《关于用自用平等口号欺骗人民》' },
-    { id: 15, name: '《四月提纲》' },
-    { id: 16, name: '《谈谈辩证法问题》' },
-    { id: 17, name: '《无产阶级革命和叛徒考茨基》' },
-    { id: 18, name: '十月革命' },
-    { id: 19, name: '《帝国主义论》' }
-  ]
-  // 边集
-  let tempEdges = [
-    { id: 1, source: 1, target: 2, relation: '创作', value: 1 },
-    { id: 2, source: 1, target: 3, relation: '创作', value: 1 },
-    { id: 3, source: 1, target: 4, relation: '创作', value: 1 },
-    { id: 4, source: 1, target: 5, relation: '诞生于', value: 1 },
-    { id: 5, source: 1, target: 6, relation: '逝世于', value: 1 },
-    { id: 6, source: 1, target: 7, relation: '领导', value: 1 },
-    { id: 7, source: 1, target: 8, relation: '创立', value: 1 },
-    { id: 8, source: 1, target: 9, relation: '整理出版', value: 1 },
-    { id: 9, source: 1, target: 10, relation: '创作', value: 1 },
-    { id: 10, source: 1, target: 11, relation: '参加', value: 1 },
-    { id: 11, source: 1, target: 12, relation: '影响', value: 1 },
-    { id: 12, source: 12, target: 13, relation: '创作', value: 1 },
-    { id: 13, source: 12, target: 14, relation: '创作', value: 1 },
-    { id: 14, source: 12, target: 15, relation: '创作', value: 1 },
-    { id: 15, source: 12, target: 16, relation: '创作', value: 1 },
-    { id: 16, source: 12, target: 17, relation: '创作', value: 1 },
-    { id: 17, source: 12, target: 18, relation: '领导', value: 1 },
-    { id: 18, source: 12, target: 19, relation: '创作', value: 1 }
-  ]
-  nodes.forEach(item => {
 
-  })
+  // 准备数据
+  // 数据结构定义
+  let reader = new FileReader();
+  let rtriple = [];
+  let nodes = [];
+  let tempEdges = [];
+
+  // 载入文件
+  function loadFile() {
+    let file = document.querySelector('.filesource').files[0];
+    reader.addEventListener("load", parseFile, false);
+    if (file) {
+      reader.readAsText(file);
+    }
+  }
+  // 处理文件
+  function parseFile() {
+    let data = d3.csvParse(reader.result, (d) => {
+      rtriple.push(d)
+    });
+  }
+
+  // 初始化知识图谱
+  function init() {
+    if (rtriple) {
+      let id, idh, idt;
+      for (let t of rtriple) {
+        idh = nodes.findIndex(n => {
+          return n.name === t['head'];
+        });
+        idt = nodes.findIndex(n => {
+          return n.name === t['tail'];
+        })
+        if (idh === -1) {
+          id = nodes.length + 1;
+          nodes.push({ id: id, name: t['head'] })
+        }
+        if (idt === -1) {
+          id = nodes.length + 1;
+          nodes.push({ id: id, name: t['tail'] })
+        }
+      }
+      console.log(nodes);
+    }
+    if (nodes && rtriple) {
+      let ids, idt, id;
+      for (let t of rtriple) {
+        ids = nodes.findIndex(n => {
+          return n.name === t['head'];
+        });
+        idt = nodes.findIndex(n => {
+          return n.name === t['tail'];
+        })
+        id = tempEdges.length + 1;
+        tempEdges.push({ id: id, source: nodes[ids].id, target: nodes[idt].id, relation: t['relation'], value: 1 })
+      }
+      console.log(tempEdges);
+    }
+    repaint();
+  }
+
+  // 为按钮绑定触发事件
+  btn.addEventListener('click', init)
+
   // 生成 nodes map
   let nodesMap = genNodesMap(nodes);
   nodesData = d3.values(nodesMap)
@@ -270,7 +294,7 @@
       data = d3.select(target).datum(); //  获取事件发生源的数据
     removeSingle()
     if (!data) {
-      document.getElementById('xxx').innerText = ''
+      document.getElementById('showinfo').innerText = ''
     }
   }, true)
   function toggleLineText(currNode, isHover) {
@@ -419,10 +443,10 @@
     var currentD = d
     if (d.clickFlag) {
       removeSingle()
-      document.getElementById('xxx').innerText = ''
+      document.getElementById('showinfo').innerText = ''
     }
     d.clickFlag = true
-    document.getElementById('xxx').innerText = d.name
+    document.getElementById('showinfo').innerText = d.name
     var data = [{
       population: 30,
       value: '删除',
@@ -591,7 +615,7 @@
   }
   //删除当前节点下一级没有其他关系的节点
   function deleteNextNodes(curr) {
-    document.getElementById('xxx').innerText = '';
+    document.getElementById('showinfo').innerText = '';
     // var removeIndex = nodesData.findIndex(node=>node.id == curr.id)
     // nodesData.splice(removeIndex,1)
     // nodes.splice(removeIndex,1)
@@ -660,7 +684,7 @@
   }
   //删除当前及下一级没有其他关系的节点
   function deleteNode(curr) {
-    document.getElementById('xxx').innerText = '';
+    document.getElementById('showinfo').innerText = '';
     var removeIndex = nodesData.findIndex(node => node.id == curr.id)
     nodesData.splice(removeIndex, 1)
     nodes.splice(removeIndex, 1)
@@ -1037,14 +1061,22 @@
   // 突出节点函数
   function searchNode() {
     // 获取输入
-    const inputIndex = document.querySelector('input')?.value
+    const input = document.querySelector('.nodesearch')?.value;
+    // 标记是否找到
+    let isfound = false;
     // 对每个元素
     d3.selectAll('.singleNode').each(function (d, i) {
-      if (d.name === inputIndex) {
+      if (d.name === input) {
+        // 标记为找到
+        isfound = true;
         // width和height根据节点的直径确定
-        zoomCenter({width: 70, height: 70, x: d.x, y: d.y});
+        zoomCenter({ width: 70, height: 70, x: d.x, y: d.y });
       }
     })
+    // 无法找到时弹出提示
+    if (!isfound) {
+      alert(`无法找到名称为 ${input} 的节点，请重试`)
+    }
   }
 </script>
 
