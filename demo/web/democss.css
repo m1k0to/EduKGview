@@ -1,0 +1,93 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body,
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+.full-container {
+    width: 100%;
+    height: 100%;
+    flex: 1;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+}
+
+.full-container .menu-box {
+    width: 240px;
+    height: 100%;
+    background-color: #fff;
+    position: relative;
+    box-sizing: border-box;
+    border-right: 1px solid #e9edf2;
+    font-size: 15px;
+}
+
+.menu-box li {
+    width: 240px;
+    min-height: 36px;
+    line-height: 36px;
+    position: relative;
+    color: #212930;
+    display: list-item;
+    padding: 4px 32px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+}
+
+.menu-box li:hover {
+    background-color: #bababa;
+    cursor: pointer;
+}
+
+.view-box {
+    width: calc(100% - 240px);
+    height: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    z-index: 0;
+    background: #f6f7f8;
+    transition: width .2s
+}
+
+.content {
+    cursor: pointer;
+}
+
+.all-graph-content {
+    display: none;
+}
+.all-graph-content div {
+    padding-left: 20px;
+}
+
+.search-box {
+    display: block;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    height: 32px;
+    top: 16px;
+    left: 32px;
+    line-height: 32px;
+    box-sizing: border-box;
+}
+
+.search-node {
+    background: #fff;
+    border: 1px solid #eaecee;
+    padding-left: 38px;
+    border-radius: 16px;
+    font-size: 13px;
+    width: 100%;
+    height: 32px;
+    line-height: 32px;
+}
