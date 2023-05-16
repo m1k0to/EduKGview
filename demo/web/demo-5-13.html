@@ -15,7 +15,8 @@
             <ol class="menu-list">
                 <li>
                     <div class="file-input">
-                        <input type="file" accept=".csv" class="filesource" style="display: none;" onchange="loadFile()"/>
+                        <input type="file" multiple="multiple" accept=".csv" class="filesource" style="display: none;"
+                            onchange="loadFile()" />
                         <div id="import">导入知识图谱</div>
                     </div>
                 </li>
@@ -27,7 +28,7 @@
                 <li>
                     <div class="all-graph">
                         <div class="content">我的知识图谱</div>
-                        
+
                     </div>
 
                 </li>
@@ -38,15 +39,18 @@
             </ol>
         </div>
         <div class="view-box">
-            <div class="search-box"><input type="text" placeholder="搜索节点" autocomplete="off" class="search-node" onchange="searchNode()"></div>
+            <div class="search-box"><input type="text" placeholder="搜索节点" autocomplete="off" class="search-node"
+                    onchange="searchNode()"></div>
         </div>
     </div>
 </body>
 <script>
     let svg = d3.select('.view-box')
         .append('svg')
-        .attr('width', 1711)
-        .attr('height', 1025);
+
+    console.log(svg)
+    // .attr('width', 1711)
+    // .attr('height', 1025)
 
     // 我的知识图谱下拉菜单
     let allGraph = document.querySelector('.all-graph .content');
@@ -74,9 +78,10 @@
         document.querySelector('.filesource').click();
     })
 
+    let viewBox = document.querySelector('.view-box');
     let zoom = null
-    let width = svg.attr('width')
-    let height = svg.attr('height')
+    let width = viewBox.clientWidth;
+    let height = viewBox.clientHeight;
 
     const zoomMin = 0.3;
     const zoomMax = 2;
@@ -93,13 +98,14 @@
 
     // 载入文件
     function loadFile() {
-        let file = document.querySelector('.filesource').files[0];
-        files[files.length] = file;
-        let fileName = file.name.length > 12 ? file.name.substring(0, 12) + '...' : file.name;
-        let newGraph = d3.select('.all-graph-content').append("li").append("div")
-            .text(fileName)
-            .attr('data-id', files.length - 1);
-        console.log(file.name.length);
+        let currFiles = Array.from(document.querySelector('.filesource').files);
+        files = files.concat(currFiles);
+        currFiles.forEach((file, index) => {
+            let fileName = file.name.length > 12 ? file.name.substring(0, 12) + '...' : file.name;
+            let newGraph = d3.select('.all-graph-content').append("li").append("div")
+                .text(fileName)
+                .attr('data-id', index);
+        });
     }
 
     document.querySelector('.all-graph-content').addEventListener('click', (e) => {
@@ -114,7 +120,7 @@
         if (files[i]) {
             reader.readAsText(files[i]);
         }
-    })
+    });
     // 处理文件
     function parseFile(callback) {
         let data = d3.csvParse(reader.result, (d) => {
@@ -158,8 +164,6 @@
                 tempEdges.push({ id: id, source: nodes[ids].id, target: nodes[idt].id, relation: t['relation'], value: 1 })
             }
         }
-        console.log(rtriple);
-        console.log(nodes);
         repaint();
     }
 
@@ -177,9 +181,9 @@
     let forceSimulation = d3.forceSimulation()
         .nodes(nodesData)                                                       // 随机生成坐标并分配
         .force('center', d3.forceCenter(width / 2, height / 2))
-        .force('link', d3.forceLink(edges).distance(200))                       // 使用边数据生成 连接力
-        .force('charge', d3.forceManyBody().strength(-300))                     // 排斥力 所有节点彼此远离
-        .force('collide', d3.forceCollide().radius(70))
+        .force('link', d3.forceLink(edges).distance(500))                       // 使用边数据生成 连接力
+        .force('charge', d3.forceManyBody().strength(-800))                     // 排斥力 所有节点彼此远离
+        .force('collide', d3.forceCollide().radius(60).iterations(2))
         .alphaDecay(0.05);                                                      // 衰减率 越大衰减越快 图越快趋于稳定
 
     // 计时器事件监听
@@ -421,8 +425,6 @@
         let pieAngle = pieData.map(function (p) {
             return (p.startAngle + p.endAngle) / 2 / Math.PI * 180;
         });
-
-        // var color=d3.schemeCategory10;
 
         //生成内部圆环
         Pie.selectAll("path")

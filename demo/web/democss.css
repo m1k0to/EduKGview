@@ -91,3 +91,8 @@ html {
     height: 32px;
     line-height: 32px;
 }
+
+.view-box svg {
+    width: 100%;
+    height: 100%;
+}
