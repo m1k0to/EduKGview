@@ -57,7 +57,7 @@
     let allGraphContent = document.querySelector('.all-graph-content');
     let allGraphCount = 0;
     allGraph.addEventListener('click', function () {
-        if (allGraphCount % 2 == 0) {
+        if (allGraphCount % 2 === 0) {
             allGraphContent.style.display = "block";
         } else {
             allGraphContent.style.display = "none";
@@ -99,13 +99,13 @@
     // 载入文件
     function loadFile() {
         let currFiles = Array.from(document.querySelector('.filesource').files);
-        files = files.concat(currFiles);
         currFiles.forEach((file, index) => {
             let fileName = file.name.length > 12 ? file.name.substring(0, 12) + '...' : file.name;
             let newGraph = d3.select('.all-graph-content').append("li").append("div")
                 .text(fileName)
-                .attr('data-id', index);
+                .attr('data-id', index + files.length);
         });
+        files = files.concat(currFiles);
     }
 
     document.querySelector('.all-graph-content').addEventListener('click', (e) => {
@@ -530,10 +530,10 @@
             let isSourceExist = 0;
             let isTargetExist = 0;
             nodes.forEach(node => {
-                if (rela.source == node.id) {
+                if (rela.source === node.id) {
                     isSourceExist = 1;
                 }
-                if (rela.target == node.id) {
+                if (rela.target === node.id) {
                     isTargetExist = 1;
                 }
             })
@@ -549,7 +549,7 @@
     //删除当前节点下一级没有其他关系的节点
     function deleteNextNodes(curr) {
         // document.getElementById('showinfo').innerText = '';
-        // // var removeIndex = nodesData.findIndex(node=>node.id == curr.id)
+        // // var removeIndex = nodesData.findIndex(node=>node.id === curr.id)
         // // nodesData.splice(removeIndex,1)
         // // nodes.splice(removeIndex,1)
         // d3.select(this).remove();
@@ -558,17 +558,17 @@
         //   hasRelationList = []
         // let clickNode = curr.id;//点击节点的名字
         // d3.selectAll(".lines").each(function (e) {
-        //   if (e.source.id == curr.id || e.target.id == curr.id) {
+        //   if (e.source.id === curr.id || e.target.id === curr.id) {
         //     hasRelationList.push(e)
         //   } else {
         //     relationList.push(e)//出去跟删除节点有关系的其他关系
         //   }
         //   //需要删除的节点相关的节点
-        //   if (e.source.id == curr.id) {
+        //   if (e.source.id === curr.id) {
         //     relationNode.push(e.target)
         //   }
         //   //需要删除的节点相关的节点
-        //   if (e.target.id == curr.id) {
+        //   if (e.target.id === curr.id) {
         //     relationNode.push(e.source)
         //   }
         // })
@@ -576,7 +576,7 @@
         // tempNodeList = uniqObjInArray(tempNodeList)
         // //区分下级节点是否是孤节点
         // tempNodeList.forEach(function (item, index) {
-        //   let hasLine = relationList.findIndex(jtem => jtem.target.id == item.id || jtem.source.id == item.id)
+        //   let hasLine = relationList.findIndex(jtem => jtem.target.id === item.id || jtem.source.id === item.id)
         //   if (hasLine >= 0) {
         //     item.notSingle = true
         //   }
@@ -594,7 +594,7 @@
         // })
         // hasRelationList.forEach(item => {
         //   otherTempNode.forEach(jtem => {
-        //     if (jtem.id == item.source.id || jtem.id == item.target.id) {
+        //     if (jtem.id === item.source.id || jtem.id === item.target.id) {
         //       d3.select('#edgepath' + item.id).remove()
         //     }
         //   })
@@ -602,7 +602,7 @@
         // d3.selectAll(".singleNode").each(function (d, i) {
         //   let temp = d.id;
         //   //删除当前需要隐藏的节点
-        //   if (temp == clickNode) {
+        //   if (temp === clickNode) {
         //     removeSingle()
         //   }
         // });
@@ -620,8 +620,7 @@
     }
     //删除与所选节点相关联节点以及自身
     function deleteNode(curr) {
-        // document.getElementById('showinfo').innerText = '';
-        let removeIndex = nodesData.findIndex(node => node.id == curr.id)
+        let removeIndex = nodesData.findIndex(node => node.id === curr.id)
         nodesData.splice(removeIndex, 1)
         nodes.splice(removeIndex, 1)
         d3.select(this).remove();
@@ -629,17 +628,17 @@
             relationList = []
         let clickNode = curr.id;//点击节点的名字
         d3.selectAll(".lines").each(function (e) {
-            if (e.source.id == curr.id || e.target.id == curr.id) {
+            if (e.source.id === curr.id || e.target.id === curr.id) {
                 d3.select(this).remove();
             } else {
                 relationList.push(e)//出去跟删除节点有关系的其他关系
             }
             //需要删除的节点相关的节点
-            if (e.source.id == curr.id) {
+            if (e.source.id === curr.id) {
                 relationNode.push(e.target)
             }
             //需要删除的节点相关的节点
-            if (e.target.id == curr.id) {
+            if (e.target.id === curr.id) {
                 relationNode.push(e.source)
             }
         })
@@ -647,7 +646,7 @@
         tempNodeList = uniqObjInArray(tempNodeList)
         //区分下级节点是否是孤节点
         tempNodeList.forEach(function (item, index) {
-            let hasLine = relationList.findIndex(jtem => jtem.target.id == item.id || jtem.source.id == item.id)
+            let hasLine = relationList.findIndex(jtem => jtem.target.id === item.id || jtem.source.id === item.id)
             if (hasLine >= 0) {
                 item.notSingle = true
             }
@@ -660,7 +659,7 @@
         d3.selectAll(".singleNode").each(function (d, i) {
             let temp = d.id;
             //删除当前需要隐藏的节点
-            if (temp == clickNode) {
+            if (temp === clickNode) {
                 removeSingle()
                 d3.select(this).remove();
             }
@@ -879,24 +878,24 @@
             let sourceIndex = 0;
             let targetIndex = 0;
             for (let i = 0; i < nodes.length; i++) {
-                if (source.name == nodes[i].name) {
+                if (source.name === nodes[i].name) {
                     isSourceExist = 1;
                     sourceIndex = i;
                 }
-                if (target.name == nodes[i].name) {
+                if (target.name === nodes[i].name) {
                     isTargetExist = 1;
                     targetIndex = i;
                 }
             }
             // 如果某一节点已经存在，则不能新加节点，而是使用已有节点
-            if (isSourceExist == 1) {
+            if (isSourceExist === 1) {
                 rela.source = nodes[sourceIndex].id;
             } else {
                 source.id = nodes[nodes.length - 1].id + 1;
                 nodes.push(source);
                 rela.source = source.id;
             }
-            if (isTargetExist == 1) {
+            if (isTargetExist === 1) {
                 rela.target = nodes[targetIndex].id;
             } else {
                 target.id = nodes[nodes.length - 1].id + 1;
@@ -924,7 +923,7 @@
         console.log(nodes);
         let nodeName = prompt("请输入节点名称");
         for (let i = 0; i < nodes.length; i++) {
-            if (nodeName == nodes[i].name) {
+            if (nodeName === nodes[i].name) {
                 return i;
             }
         }
@@ -936,7 +935,7 @@
         console.log(nodes);
         console.log('byname');
         for (let i = 0; i < nodes.length; i++) {
-            if (name == nodes[i].name) {
+            if (name === nodes[i].name) {
                 return i;
             }
         }
